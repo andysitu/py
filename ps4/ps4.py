@@ -343,15 +343,15 @@ def find_best_shifts_rec(wordlist, text, start = 0):
         for j in range(start, length+1):
             if is_word(wordlist, newText[start: j]):
                 if j == length: #end of the string
-                    print "End of string"
+                    #print "End of string"
                     return [(start, i)]
                 elif newText[start] == " ":
                     continue
                 elif newText[j] == ' ':
                     tup = find_best_shifts_rec(wordlist, newText, j + 1)
-                    print "checking type of tup:", type(tup), tup
+                    #print "checking type of tup:", type(tup), tup
                     if type(tup) is list:
-                        print "It's a list:", tup
+                        #print "It's a list:", tup
                         if tup[0][1] == 0:
                             return [(start, i)]
                         else:
