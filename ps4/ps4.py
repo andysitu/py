@@ -80,6 +80,7 @@ def random_scrambled(wordlist, n):
     implementation of apply_shifts!
     """
     s = random_string(wordlist, n) + " "
+    print s
     shifts = [(i, random.randint(0, 26)) for i in range(len(s)) if s[i-1] == ' ']
     return apply_shifts(s, shifts)[:-1]
 
@@ -331,36 +332,39 @@ def find_best_shifts_rec(wordlist, text, start = 0):
     """
 
     #print "START:", start
-    if start >= len(text):
-        return []
     newText = text
     shiftValue = 0
     length = len(text)
     end = 0
+    arr = []
     for i in range(0,27):
-        splitText = text[start: ]
+        splitText = text[start: ]   
         newText = text[ : start] + apply_deshift(splitText, i)
         print i, newText, is_word(wordlist, apply_deshift(splitText, i)), apply_deshift(splitText, i)
-        if is_word(wordlist, apply_deshift(splitText, i)):
-            text = newText
-            shiftValue = i
-            end = length - 1
-        else:
-            for j in range(start, length):
-                if is_word(wordlist, newText[start: j+1]) and (newText[j] == ' ' or j == length - 1):
-                    text = newText
-                    shiftValue = i
-                    end = j
-                    break
-    #print text, "start:", start, "shiftvalue:", shiftValue, "end:", end
-    for i in range(end+1, length):
-        if is_word(wordlist, text[end: i]) and i == len(text) - 1:
-            end = length - 1
-            print "THE END"
-        elif is_word(wordlist, text[end: i]) and text[i] == ' ':
-            end = i
-            #print "Found another end", end
-    return [(start, shiftValue)] + find_best_shifts_rec(wordlist,text, end + 1)
+        for j in range(start, length+1):
+            if is_word(wordlist, newText[start: j]):
+                if j == length: #end of the string
+                    print "End of string"
+                    return (start, i)
+                elif newText[start] == " ":
+                    continue
+                elif newText[j] == ' ':
+                    tup = find_best_shifts_rec(wordlist, newText, j + 1)
+                    print "checking type of tup:", type(tup), tup
+                    if type(tup) is tuple:
+                        print "It's a tup:", tup
+                        if tup[1] == 0:
+                            return arr + [(start, j)]
+                        else:
+                            return arr + [tup]
+                    elif type(tup) is list:
+                        print "It's a list:", tup
+                        return arr + tup
+                    elif tup == None:
+                        continue
+    if start == 0 and len(arr) != 0:
+        return arr
+    return None
                 
 def find_best_shifts(wordlist, text):
     """
@@ -400,7 +404,7 @@ def find_best_shifts(wordlist, text):
 
 s = random_scrambled(wordlist, 3)
 print s
-shifts = find_best_shifts(wordlist, s)
+print find_best_shifts(wordlist, s)
         
 
 
