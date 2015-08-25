@@ -301,6 +301,13 @@ def apply_shifts(text, shifts):
         string = string[0: tup[0] ] + apply_shift(stringPiece, tup[1])
     return string
 
+def apply_deshifts(text, shifts):
+    string = text
+    for i in range(0, len(shifts)):
+        tup = shifts[i]
+        stringPiece = string[tup[0]: ]
+        string = string[0: tup[0] ] + apply_shift(stringPiece, -tup[1])
+    return string
 
 #
 # Problem 4: Multi-level decryption.
@@ -339,8 +346,12 @@ def find_best_shifts_rec(wordlist, text, start = 0):
     for i in range(0,27):
         splitText = text[start: ]   
         newText = text[ : start] + apply_deshift(splitText, i)
-        #print i, newText, is_word(wordlist, apply_deshift(splitText, i)), apply_deshift(splitText, i)
-        for j in range(start, length+1):
+        #print i, newText
+        if length - start > 20:
+            endStr = 20 + start
+        else:
+            endStr = length+ 1
+        for j in range(start, endStr):
             if is_word(wordlist, newText[start: j]):
                 if j == length: #end of the string
                     #print "End of string"
@@ -353,12 +364,15 @@ def find_best_shifts_rec(wordlist, text, start = 0):
                     if type(tup) is list:
                         #print "It's a list:", tup
                         if tup[0][1] == 0:
-                            return [(start, i)]
+                            if len(tup) == 1:
+                                return [(start, i)]
+                            else:
+                                return [(start,i)] + tup[1:]
                         else:
                             return [(start, i)] + tup
                     elif tup == None:
                         continue
-    if start == 0 and len(arr) != 0:
+    if start == 0 and len(tup) != 0:
         return arr
     return None
                 
@@ -391,16 +405,17 @@ def find_best_shifts(wordlist, text):
     Do Androids Dream of Electric Sheep?
     """
 
-    return find_best_shifts_rec(wordlist, text)
+    shifts = find_best_shifts_rec(wordlist, text)
+    #print shifts
+    return apply_deshifts(text, shifts)
+    
         
 
-s = apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
-shifts = find_best_shifts(wordlist, s)
-print shifts
-
-s = random_scrambled(wordlist, 3)
-print s
-print find_best_shifts(wordlist, s)
+##s = apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
+##print find_best_shifts(wordlist, s)
+##
+##s = random_scrambled(wordlist, 3)
+##print find_best_shifts(wordlist, s)
         
 
 
@@ -414,22 +429,11 @@ def decrypt_fable():
 
     returns: string - fable in plain text
     """
-    ### TODO.
+     string = get_fable_string()
+     return find_best_shifts(wordlist, string)
 
-def decode_it(text, shifts):
-    return apply_coder(text, build_decoder(shifts))
+print decrypt_fable()
 
-def find_last_word(wordlist, text, shifts):
-    text = decode_it(text, shifts)
-    arr = text.split()
-    string = arr[0]
-    length = range(0, len(string))
-    for i in length:
-        if is_word(wordlist, string[i:]):
-            print string[i:], i 
-            break
-
-    
 #What is the moral of the story?
 #
 #
@@ -437,3 +441,12 @@ def find_last_word(wordlist, text, shifts):
 #
 #
 
+"""
+An Ingenious Man who had built a flying machine invited a great concourse of
+people to see it go up. at the appointed moment, everything being ready, he boarded
+the car and turned a a he power. the machine immediately broke through the massive
+substructure upon which it was builded, and sank out of sight into the earth, the aeronaut
+springing out barely in time to save himself. "well," said he, "i have done enough to
+demonstrate the correctness of my details. the defects," he added, with a add hat the
+ruined brick work, "are merely basic and fundamental." upon this assurance the people
+came ox ward with subscriptions to build a second machine"""
