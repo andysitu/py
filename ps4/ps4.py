@@ -336,30 +336,26 @@ def find_best_shifts_rec(wordlist, text, start = 0):
     shiftValue = 0
     length = len(text)
     end = 0
-    arr = []
     for i in range(0,27):
         splitText = text[start: ]   
         newText = text[ : start] + apply_deshift(splitText, i)
-        print i, newText, is_word(wordlist, apply_deshift(splitText, i)), apply_deshift(splitText, i)
+        #print i, newText, is_word(wordlist, apply_deshift(splitText, i)), apply_deshift(splitText, i)
         for j in range(start, length+1):
             if is_word(wordlist, newText[start: j]):
                 if j == length: #end of the string
                     print "End of string"
-                    return (start, i)
+                    return [(start, i)]
                 elif newText[start] == " ":
                     continue
                 elif newText[j] == ' ':
                     tup = find_best_shifts_rec(wordlist, newText, j + 1)
                     print "checking type of tup:", type(tup), tup
-                    if type(tup) is tuple:
-                        print "It's a tup:", tup
-                        if tup[1] == 0:
-                            return arr + [(start, j)]
-                        else:
-                            return arr + [tup]
-                    elif type(tup) is list:
+                    if type(tup) is list:
                         print "It's a list:", tup
-                        return arr + tup
+                        if tup[0][1] == 0:
+                            return [(start, i)]
+                        else:
+                            return [(start, i)] + tup
                     elif tup == None:
                         continue
     if start == 0 and len(arr) != 0:
@@ -398,9 +394,9 @@ def find_best_shifts(wordlist, text):
     return find_best_shifts_rec(wordlist, text)
         
 
-##s = apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
-##shifts = find_best_shifts(wordlist, s)
-##print shifts
+s = apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
+shifts = find_best_shifts(wordlist, s)
+print shifts
 
 s = random_scrambled(wordlist, 3)
 print s
