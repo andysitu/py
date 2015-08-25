@@ -235,10 +235,13 @@ def apply_shift(text, shift):
     """
     return apply_coder(text, build_encoder(shift))
 
+def apply_deshift(text, shift):
+    return apply_coder(text, build_decoder(shift))
+
 #
 # Problem 2: Codebreaking.
 #
-def find_best_shift(wordlist, text, start = 1):
+def find_best_shift(wordlist, text):
     """
     Decrypts the encoded text and returns the plaintext.
 
@@ -259,7 +262,7 @@ def find_best_shift(wordlist, text, start = 1):
     shiftLoc = 0
     unText = ""
     arr = []
-    for i in range(start,27):
+    for i in range(1,27):
         counter = 0
         unText = apply_coder(text, build_decoder(i))
         arr = unText.split()
@@ -297,6 +300,7 @@ def apply_shifts(text, shifts):
         string = string[0: tup[0] ] + apply_shift(stringPiece, tup[1])
     return string
 
+
 #
 # Problem 4: Multi-level decryption.
 #
@@ -325,23 +329,38 @@ def find_best_shifts_rec(wordlist, text, start = 0):
     start: where to start looking at shifts
     returns: list of tuples.  each tuple is (position in text, amount of shift)
     """
-    if len(text) <= start:
-        return []
-    else:
-        length = range(start + 1, len( text)+1)
-        for i in length:
-            while True:
-                shift = find_best_shift(wordlist, text[ start: i])
-                print shift
-                space = apply_coder(text[i], build_decoder(shift))
-                if space == " ":
-                    print "Found it. start:", start, "I:", i, "J:", j
-##                    newText = apply_coder(text, build_decoder(j))
-##                    print newText
-##                    return [(start, j)] + find_best_shifts_rec(wordlist, newText, i + 1)
-##        print "HI"
-##        return []
 
+    #print "START:", start
+    if start >= len(text):
+        return []
+    newText = text
+    shiftValue = 0
+    length = len(text)
+    end = 0
+    for i in range(0,27):
+        splitText = text[start: ]
+        newText = text[ : start] + apply_deshift(splitText, i)
+        print i, newText, is_word(wordlist, apply_deshift(splitText, i)), apply_deshift(splitText, i)
+        if is_word(wordlist, apply_deshift(splitText, i)):
+            text = newText
+            shiftValue = i
+            end = length - 1
+        else:
+            for j in range(start, length):
+                if is_word(wordlist, newText[start: j+1]) and (newText[j] == ' ' or j == length - 1):
+                    text = newText
+                    shiftValue = i
+                    end = j
+                    break
+    #print text, "start:", start, "shiftvalue:", shiftValue, "end:", end
+    for i in range(end+1, length):
+        if is_word(wordlist, text[end: i]) and i == len(text) - 1:
+            end = length - 1
+            print "THE END"
+        elif is_word(wordlist, text[end: i]) and text[i] == ' ':
+            end = i
+            #print "Found another end", end
+    return [(start, shiftValue)] + find_best_shifts_rec(wordlist,text, end + 1)
                 
 def find_best_shifts(wordlist, text):
     """
@@ -372,29 +391,16 @@ def find_best_shifts(wordlist, text):
     Do Androids Dream of Electric Sheep?
     """
 
-    arr = find_best_shifts_rec(wordlist, text)
-##    arr = [[]]
-##    newText = text
-##    counter = 0
-##    while arr[counter][0] != "end":
-##        print arr
-##        arr = find_best_shifts_rec(wordlist, text)
-##        newText = apply_coder(text, build_decoder(arr[counter]))
-##        counter += 1
-##        
-##    arr += find_best_shifts_rec(wordlist, newText, arr[0]+1)
-##    print arr
-##    
-##    newText = apply_coder(newText, build_decoder(arr[3]))
-##    print newText
-##    arr += find_best_shifts_rec(wordlist, newText, arr[2]+1)
-    return arr
+    return find_best_shifts_rec(wordlist, text)
         
 
-s = apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
-#print s
+##s = apply_shifts("Do Androids Dream of Electric Sheep?", [(0,6), (3, 18), (12, 16)])
+##shifts = find_best_shifts(wordlist, s)
+##print shifts
+
+s = random_scrambled(wordlist, 3)
+print s
 shifts = find_best_shifts(wordlist, s)
-print shifts
         
 
 
