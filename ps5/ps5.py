@@ -204,10 +204,26 @@ def readTriggerConfig(filename):
     # Build a set of triggers from it and
     # return the appropriate ones
 
-    for line in lines:
-        lines[line] = line.split(" ")
-
-        print line
+    trigList = []
+    for i in range(0, len(lines)):
+        lines[i] = lines[i].split(" ")
+        if lines[i][0] != 'ADD':
+            trig = lines[i][0]
+            lines[i].pop(0)
+            trigger_name = lines[i][0][0:1] + lines[i][0].lower()[1:] + "Trigger"
+            lines[i].pop(0)
+            if trigger_name == "AndTrigger" or trigger_name == "OrTrigger":
+                lines[i] = ",".join(lines[i])
+                exec(trig + " = " + trigger_name + "( " + lines[i] + " )")
+            else:
+                lines[i] = " ".join(lines[i])
+                exec(trig + " = " + trigger_name + "( '" + lines[i] + "' )")
+        else:
+            for j in range(1, len(lines[i])):
+                trigList.append(lines[i][j])
+                                
+    exec("trigList = [" + ",".join(trigList) + "]")
+    return trigList
     
 import thread
 
@@ -215,15 +231,15 @@ def main_thread(p):
     # A sample trigger list - you'll replace
     # this with something more configurable in Problem 11
     t1 = SubjectTrigger("Obama")
-    t2 = SummaryTrigger("MIT")
-    t3 = PhraseTrigger("Supreme Court")
+    t2 = SummaryTrigger("Obama")
+    t3 = PhraseTrigger("Derrick Rose")
     t4 = OrTrigger(t2, t3)
     triggerlist = [t1, t4]
     
     # TODO: Problem 11
     # After implementing readTriggerConfig, uncomment this line 
     triggerlist = readTriggerConfig("triggers.txt")
-
+    print len(triggerlist)
     guidShown = []
     
     while True:
